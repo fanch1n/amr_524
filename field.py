@@ -1,4 +1,4 @@
 import numpy as np
 
-if __name__ == “main”:
+if __name__ == “__main__”:
 
