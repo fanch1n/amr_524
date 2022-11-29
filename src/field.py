@@ -49,8 +49,8 @@ class Field:
                 self.values[i, j] = val/len(smallest_dist_rows)
         return
 
-    def evolve(self, ode, dt, t):
-        ode.evolve(self.mesh, dt, t)
+    def evolve(self, solver_ode, dt, t):
+        solver_ode.evolve(self.mesh, dt, t)
         return 
 
     def __str__(self):
