@@ -60,14 +60,60 @@ class Field:
                         self.values[i, j] /= weight_sum
         return
 
-    def visualize(self, ncontours = 10):
-        plt.contourf(self.x_coord, self.y_coord, self.values, ncontours, cmap=plt.cm.rainbow)
-        plt.colorbar()  
-        plt.show()
-        return
+    '''raw gradient with the finest mesh. No stencil, just the regular thing'''
+    def gradient(self, boundary = "absorbing"):
+        result = np.zeros((self.nx, self.ny, 2))
+        dx = self.x_coord[1] - self.x_coord[0]
+        dy = self.y_coord[1] - self.y_coord[0]
+        for i in range(1, self.nx - 1):
+            for j in range(1, self.ny - 1):
+                x_lower = self.values[i - 1, j]
+                x_higher = self.values[i + 1, j]
+                result[i, j, 0] = (x_higher - x_lower)/(2*dx)
+                y_lower = self.values[i, j - 1]
+                y_higher = self.values[i, j + 1]
+                result[i, j, 1] = (y_higher - y_lower)/(2*dy)
+        for i in range(1, self.nx - 1):
+            result[i, 0, 0] = (self.values[i + 1, 0] - self.values[i - 1, 0])/(2*dx)
+            result[i, self.ny - 1, 0] = (self.values[i + 1, self.ny - 1] - self.values[i - 1, self.ny - 1])/(2*dx)
+        for j in range(1, self.ny - 1):
+            result[0, j, 1] = (self.values[0, j + 1] - self.values[0, j - 1])/(2*dy)
+            result[self.nx - 1, j, 1] = (self.values[self.nx - 1, j + 1] - self.values[self.nx - 1, j - 1])/(2*dy)
+        if boundary == "absorbing":
+            for i in range(self.nx):
+                result[i, 0, 1] = (self.values[i, 1] - 0)/(2*dy)
+                result[i, self.ny - 1, 1] = (0 - self.values[i, self.ny - 2])/(2*dy)
+            for j in range(self.ny):
+                result[0, j, 0] = (self.values[1, j] - 0)/(2*dx)
+                result[self.nx - 1, j, 0] = (0 - self.values[self.nx - 2, j])/(2*dx)
+        elif boundary == "periodic":
+            for i in range(self.nx):
+                result[i, 0, 1] = (self.values[i, 1] - self.values[i, self.ny - 1])/(2*dy)
+                result[i, self.ny - 1, 1] = (self.values[i, 0] - self.values[i, self.ny - 2])/(2*dy)
+            for j in range(self.ny):
+                result[0, j, 0] = (self.values[1, j] - self.values[self.nx - 1, j])/(2*dx)
+                result[self.nx - 1, j, 0] = (self.values[0, j] - self.values[self.nx - 2, j])/(2*dx)
+        return result
 
-    def evolve(self, solver_ode, dt, t):
-        solver_ode.evolve(self.mesh, dt, t)
+    def visualize(self, ncontours = 10):
+        result = plt.figure(1)
+        plt.contourf(self.x_coord, self.y_coord, self.values, ncontours, cmap=plt.cm.rainbow)
+        plt.colorbar()
+        plt.axis('equal')
+        plt.title("Field values")
+        return result
+
+    def visualize_gradient(self, boundary = "absorbing"):
+        grad = self.gradient(boundary)
+        u = grad[:, :, 0]
+        v = grad[:, :, 1]
+        result = plt.figure(2, figsize=(5, 5))
+        plt.quiver(self.x_coord, self.y_coord, v, u, color='g', clip_on=False)
+        plt.title('Field gradient')
+        return result
+
+    def evolve(self, pde, dt, time_steps):
+        pde.evolve(self.mesh, dt, time_steps)
         return 
 
     def __str__(self):
@@ -79,9 +125,11 @@ class Field:
 
 def test_field():
     my_field = Field(20, 20)
-    my_field.initialize_values("lib/field.xyz", "voronoi")
+    my_field.initialize_values("lib/field.xyz", "inverse_dist")
     print(my_field)
-    my_field.visualize()
+    fig1 = my_field.visualize()
+    fig2 = my_field.visualize_gradient("periodic")
+    plt.show()
     return
 
 test_field()
