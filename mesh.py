@@ -3,7 +3,7 @@
 # need numpy, matplotlib to run the program
 #==============================================================================
 # Open cv library
-import cv2
+#import cv2
 
 # matplotlib for displaying the images 
 from matplotlib import pyplot as plt
@@ -69,14 +69,13 @@ class QTree():
         plt.title("Mesh")
         c = find_children(self.root)
         print("Number of mini-domains: %d" %len(c))
-        plt.imshow(self.domain)
+        plt.imshow(self.domain, cmap='OrRd')
         for n in c:
             # test computation can be down here.
             #print(n.x0, n.y0, n.height, n.width)
             #print(self.domain[n.x0, n.y0])
             #self.domain[n.x0, n.y0] += 1.
             plt.gcf().gca().add_patch(patches.Rectangle((n.y0, n.x0), n.height, n.width, fill=False))
-        plt.imshow(self.domain)
         plt.gcf().gca().set_xlim(0, self.domain.shape[1])
         plt.gcf().gca().set_ylim(self.domain.shape[0], 0)
         plt.axis('equal')
@@ -140,7 +139,7 @@ def main():
     CELL_MIN = 2
     
     # Load a sample 2D matrix
-    domain = np.load("final.npy")
+    domain = np.load("circle.npy")
     print("Size of the system: ", (domain.shape[0], domain.shape[1]))
 
     #write_field(domain, 0)
