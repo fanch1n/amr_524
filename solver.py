@@ -1,29 +1,17 @@
 import numpy as np
 # input: user defined PDE information (type, parameter)
 # method: gen_solver, finite_difference()
-def get_solver_options(solver_options):
-     # default_solver_options = {'solver':diffusion, 'D':1.e-3, 'max_iters':1000000}
-     # default_solver_options.update(solver_options)
-     # return default_solver_options
-     return 
+# Get Qtree and from mesh and solver options from field, evolve 100 steps and pass back to mesh
+ 
+class Solver():
+    def __init__(self, bondx='OPEN'):
+	self.bondx = bondx
 
-def diffusion():
+    def diffusion():
     
-    return 
+        return 
 
-def spinodal_decomposition():
 
-    return 
-
-def gen_solver(problem, bondx):
-    def solver():
-        return
-    return 
-
-def finite_difference():
-
-    return 
-
-def evolve():
-
-    return 
+    def evolve():
+    
+        return 
