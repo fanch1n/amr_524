@@ -37,9 +37,6 @@ class Node():
     def get_height(self):
         return self.height
     
-    #def get_points(self):
-    #    return self.points
-    
     def get_points(self, domain):
         return domain[self.x0:self.x0 + self.get_width(), self.y0:self.y0+self.get_height()]
 
@@ -48,8 +45,26 @@ class Node():
         x_grad = np.gradient(pixels)[0]
         y_grad = np.gradient(pixels)[1]
         grad_phi = np.sqrt(x_grad**2 + y_grad**2)
-        
         return np.mean(grad_phi)
+
+    def recursive_subdivide(self, threshold, minCellSize, domain):
+        if self.get_grad(domain) <= threshold: #no refinement if the gradient is too small
+            return
+        w_1 = int(math.floor(self.width/2)) # round down
+        w_2 = int(math.ceil(self.width/2)) # round up
+        h_1 = int(math.floor(self.height/2))
+        h_2 = int(math.ceil(self.height/2))
+        if w_1 <= minCellSize or h_1 <= minCellSize:
+            return
+        x1 = Node(self.x0, self.y0, w_1, h_1) # top left
+        x1.recursive_subdivide(threshold, minCellSize, domain)
+        x2 = Node(self.x0, self.y0 + h_1, w_1, h_2) # btm left
+        x2.recursive_subdivide(threshold, minCellSize, domain)
+        x3 = Node(self.x0 + w_1, self.y0, w_2, h_1)# top right
+        x3.recursive_subdivide(threshold, minCellSize, domain)
+        x4 = Node(self.x0 + w_1, self.y0 + h_1, w_2, h_2) # btm right
+        x4.recursive_subdivide(threshold, minCellSize, domain)
+        self.children = [x1, x2, x3, x4]
 
 class QTree():
     def __init__(self, stdThreshold, minCellSize, domain):
@@ -59,16 +74,17 @@ class QTree():
         self.root = Node(0, 0, domain.shape[0], domain.shape[1]) # Tree structure starts from (0,0)
 
     def get_points(self):
-        return self.domain[self.root.x0:self.root.x0 + self.root.get_width(), self.root.y0:self.root.y0+self.root.get_height()]
-    
+        return self.root.get_points()
+
     def subdivide(self):
-        recursive_subdivide(self.root, self.threshold, self.minCellSize, self.domain)
+        self.root.recursive_subdivide(self.threshold, self.minCellSize, self.domain)
     
-    def graph_tree(self):
-        fig = plt.figure(figsize=(10, 10))
-        plt.title("Mesh")
+    '''visualize the tree mesh'''
+    def graph_tree(self): 
         c = find_children(self.root)
         print("Number of mini-domains: %d" %len(c))
+        fig = plt.figure(figsize=(10, 10))
+        plt.title("Mesh")
         plt.imshow(self.domain, cmap='OrRd')
         for n in c:
             # test computation can be down here.
@@ -87,32 +103,6 @@ class QTree():
 # functions
 #==============================================================================
 # to implement adaptive mesh using the Classes
- 
-def recursive_subdivide(node, k, minCellSize, domain):
-
-    if node.get_grad(domain)<=k:
-        return
-    w_1 = int(math.floor(node.width/2)) # round down
-    w_2 = int(math.ceil(node.width/2)) # round up
-    h_1 = int(math.floor(node.height/2))
-    h_2 = int(math.ceil(node.height/2))
-
-    if w_1 <= minCellSize or h_1 <= minCellSize:
-        return
-    x1 = Node(node.x0, node.y0, w_1, h_1) # top left
-    recursive_subdivide(x1, k, minCellSize, domain)
-
-    x2 = Node(node.x0, node.y0+h_1, w_1, h_2) # btm left
-    recursive_subdivide(x2, k, minCellSize, domain)
-
-    x3 = Node(node.x0 + w_1, node.y0, w_2, h_1)# top right
-    recursive_subdivide(x3, k, minCellSize, domain)
-
-    x4 = Node(node.x0+w_1, node.y0+h_1, w_2, h_2) # btm right
-    recursive_subdivide(x4, k, minCellSize, domain)
-
-    node.children = [x1, x2, x3, x4]
-   
 
 def find_children(node):
    if not node.children:
@@ -140,6 +130,7 @@ def main():
     
     # Load a sample 2D matrix
     domain = np.load("circle.npy")
+    print(domain)
     print("Size of the system: ", (domain.shape[0], domain.shape[1]))
 
     #write_field(domain, 0)

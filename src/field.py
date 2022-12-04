@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-#import mesh, solver
+import mesh
 
 class Field:
     def __init__(self, nx, ny):
@@ -124,11 +124,17 @@ class Field:
         return s
 
 def test_field():
-    my_field = Field(20, 20)
-    my_field.initialize_values("lib/field.xyz", "inverse_dist")
-    print(my_field)
+    my_field = Field(250, 250)
+    my_field.initialize_values("lib/field.xyz", "voronoi")
     fig1 = my_field.visualize()
     fig2 = my_field.visualize_gradient("periodic")
+    domain = my_field.values
+    print("Size of the system: ", (domain.shape[0], domain.shape[1]))
+    EPS = 1e-8
+    CELL_MIN = 3
+    test_domain = mesh.QTree(EPS, CELL_MIN, domain)  #contrast threshold, min cell size,domaing
+    test_domain.subdivide() # recursively generates quad tree
+    test_domain.graph_tree()
     plt.show()
     return
 
