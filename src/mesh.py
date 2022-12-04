@@ -96,7 +96,10 @@ class QTree():
         plt.gcf().gca().set_ylim(self.domain.shape[0], 0)
         plt.axis('equal')
         #plt.colorbar()
-        plt.show()
+        if save:
+            plt.savefig(save+'.png')
+        #plt.show()
+
         return
 
 #==============================================================================
