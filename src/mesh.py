@@ -38,12 +38,25 @@ class Node():
         return self.height
     
     def get_points(self, domain):
-        return domain[self.x0:self.x0 + self.get_width(), self.y0:self.y0+self.get_height()]
+        return domain[self.x0:self.x0 + self.get_width(), self.y0:self.y0 + self.get_height()]
+
+    def get_points_loose(self, domain): #assuming PBC here
+        smallx = max(0, self.x0 - 1)
+        largex = min(domain.shape[0], self.x0 + self.get_width() + 1)
+        smally = max(0, self.y0 - 1)
+        largey = min(domain.shape[1], self.y0 + self.get_height() + 1)
+        return domain[smallx:largex, smally:largey]
+
+    def get_corners(self):
+        return [(self.x0, self.y0), (self.x0 + self.width - 1, self.y0), \
+        (self.x0, self.y0 + self.height - 1), (self.x0 + self.width - 1, self.y0 + self.height - 1)]
 
     def get_grad(self, domain):
-        pixels = self.get_points(domain)
-        x_grad = np.gradient(pixels)[0]
-        y_grad = np.gradient(pixels)[1]
+        grad = np.gradient(self.get_points_loose(domain))
+        x_grad_big = grad[0]
+        y_grad_big = grad[1]
+        x_grad = x_grad_big[1:1 + self.width, 1: 1 + self.height]
+        y_grad = y_grad_big[1:1 + self.width, 1: 1 + self.height]
         grad_phi = np.sqrt(x_grad**2 + y_grad**2)
         return np.mean(grad_phi)
 
@@ -80,7 +93,7 @@ class QTree():
         self.root.recursive_subdivide(self.threshold, self.minCellSize, self.domain)
     
     '''visualize the tree mesh'''
-    def graph_tree(self): 
+    def graph_tree(self, save=None): 
         c = find_children(self.root)
         print("Number of mini-domains: %d" %len(c))
         fig = plt.figure(figsize=(10, 10))
@@ -95,10 +108,11 @@ class QTree():
         plt.gcf().gca().set_xlim(0, self.domain.shape[1])
         plt.gcf().gca().set_ylim(self.domain.shape[0], 0)
         plt.axis('equal')
-        #plt.colorbar()
+        plt.colorbar()
         if save:
             plt.savefig(save+'.png')
-        #plt.show()
+        else:
+            plt.show()
 
         return
 
@@ -108,13 +122,13 @@ class QTree():
 # to implement adaptive mesh using the Classes
 
 def find_children(node):
-   if not node.children:
-       return [node]
-   else:
-       children = []
-       for child in node.children:
-           children += (find_children(child))
-   return children
+    if not node.children:
+        return [node]
+    else:
+        result = []
+        for child in node.children:
+            result += (find_children(child))     
+    return result
 
 def write_field(field, step):
     plt.figure()
