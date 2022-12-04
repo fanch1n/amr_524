@@ -64,7 +64,7 @@ class QTree():
     def subdivide(self):
         recursive_subdivide(self.root, self.threshold, self.minCellSize, self.domain)
     
-    def graph_tree(self):
+    def graph_tree(self, save=None):
         fig = plt.figure(figsize=(10, 10))
         plt.title("Mesh")
         c = find_children(self.root)
@@ -80,7 +80,10 @@ class QTree():
         plt.gcf().gca().set_ylim(self.domain.shape[0], 0)
         plt.axis('equal')
         #plt.colorbar()
-        plt.show()
+        if save:
+            plt.savefig(save+'.png')
+        #plt.show()
+
         return
 
 #==============================================================================
@@ -89,8 +92,8 @@ class QTree():
 # to implement adaptive mesh using the Classes
  
 def recursive_subdivide(node, k, minCellSize, domain):
-
-    if node.get_grad(domain)<=k:
+ 
+    if node.get_grad(domain) <=k:
         return
     w_1 = int(math.floor(node.width/2)) # round down
     w_2 = int(math.ceil(node.width/2)) # round up
