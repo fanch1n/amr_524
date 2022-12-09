@@ -85,5 +85,5 @@ def evolve_n_steps(qtree, pde, steps, plot_dir="lib/diffusion", **pde_kwargs):
 if __name__ == "__main__":
     domain = np.load("lib/circle.npy")
     print("Size of the system: ", (domain.shape[0], domain.shape[1]))
-    test_domain = QTree(domain, EPS=1e-6, CELL_MIN=4, bondx="PBC")
+    test_domain = QTree(domain, stdThreshold=1e-6, minCellSize=4, bondx="PBC")
     evolve_n_steps(test_domain, evolve_diffusion, 10000)
