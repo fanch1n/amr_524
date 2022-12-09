@@ -4,7 +4,7 @@ requires = ["flit_core >=3.8.0,<4"]
 
 [project]
 name = "amr_524"
-version = "0.1.1"
+version = "0.1.2"
 description = "adaptive mesh refinement"
 requires-python = ">=3.7"
 keywords = ["one", "two"]
@@ -16,6 +16,7 @@ classifiers = [
 dependencies = [
     "requests",
     'importlib-metadata; python_version<"3.8"',
+    "numpy"
 ]
 
 [project.optional-dependencies]
