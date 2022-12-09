@@ -16,7 +16,9 @@ classifiers = [
 dependencies = [
     "requests",
     'importlib-metadata; python_version<"3.8"',
-    "numpy"
+    "numpy",
+    "imageio",
+    "natsort"
 ]
 
 [project.optional-dependencies]

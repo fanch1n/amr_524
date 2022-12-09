@@ -1,5 +1,8 @@
 from amr_524.mesh import QTree
 import numpy as np
+import imageio
+import glob
+from natsort import natsorted
 
 
 def evolve_diffusion(qtree, dx=1, dy=1, dt=0.01):  # evolve one step
@@ -77,13 +80,22 @@ def evolve_n_steps(qtree, pde, steps, plot_dir="lib/diffusion", **pde_kwargs):
             qtree = QTree(EPS, CELL_MIN, new_mesh, bondx)
             qtree.subdivide()
             if step < 20 or step % 500 == 0:
-                qtree.graph_tree(plot_dir + "/step%d" % step)
+                qtree.graph_tree(plot_dir + "/step%d" % step, "step %d" % step)
         qtree.domain = np.copy(new_mesh)
     return None
+    
+
+def create_video(plot_dir):
+    images = []
+    filenames = natsorted(glob.glob(plot_dir + "/step*.png"))
+    for filename in filenames:
+        images.append(imageio.imread(filename))
+    imageio.mimsave(plot_dir + '/movie.gif', images, duration = 0.2)
 
 
 if __name__ == "__main__":
-    domain = np.load("lib/circle.npy")
+    '''domain = np.load("lib/circle.npy")
     print("Size of the system: ", (domain.shape[0], domain.shape[1]))
-    test_domain = QTree(domain, stdThreshold=1e-6, minCellSize=4, bondx="PBC")
-    evolve_n_steps(test_domain, evolve_diffusion, 10000)
+    test_domain = QTree(1e-7, 4, domain, bondx="PBC")
+    evolve_n_steps(test_domain, evolve_diffusion, 10000)'''
+    create_video("lib/diffusion")
