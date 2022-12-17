@@ -1,0 +1,13 @@
+.DS_store
+
+node_modules
+
+**/__pycache__
+
+*.txt
+
+.env
+
+lib/*.png
+lib/spinodal/*
+test*
